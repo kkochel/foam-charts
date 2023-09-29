@@ -1,0 +1,124 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "foam-app.fullname" . }}
+  labels:
+    {{- include "foam-app.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "foam-app.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "foam-app.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "foam-app.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: init-java-certs
+          image: neicnordic/openssl-alpine:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              keytool -import \
+                      -trustcacerts \
+                      -file /tls-certs/ca.crt \
+                      -alias legaCA -storetype JKS \
+                      -keystore /tls/cacerts \
+                      -storepass "${KEYSTORE_PASSWORD}" \
+                      -noprompt &&
+              openssl pkcs12 -export \
+                             -out /tls/keystore.p12 \
+                             -inkey /tls-certs/tls.key \
+                             -in /tls-certs/tls.crt \
+                             -passout pass:"${KEYSTORE_PASSWORD}"
+          securityContext:
+            allowPrivilegeEscalation: false
+          env:
+            - name: KEYSTORE_PASSWORD
+              value: {{ required "Keystore password is required" .Values.sftpInbox.keystorePass | quote }}
+          volumeMounts:
+            - name: tls-certs
+              mountPath: /tls-certs
+            - name: tmp
+              mountPath: /tls
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: BROKER_HOST
+              value: {{ required "A Rabbit MQ host is required" .Values.broker.host | quote }}
+            - name: BROKER_PORT
+              value: {{ required "A Rabbit MQ port is required" .Values.broker.port | quote }}
+            - name: BROKER_USERNAME
+              value: {{ required "A Rabbit MQ username is required" .Values.broker.username | quote }}
+            - name: BROKER_PASSWORD
+              value: {{ required "A Rabbit MQ password is required" .Values.broker.password | quote }}
+            - name: BROKER_VHOST
+              value: {{ required "A Rabbit MQ vhost is required" .Values.broker.vhost | quote }}
+            - name: BROKER_SSL
+              value: {{ required "A Rabbit MQ vhost is required" .Values.broker.tls.enabled | quote }}
+            - name: KEYSTORE_PATH
+              value: {{ required "A Rabbit MQ vhost is required" .Values.broker.tls.keystore.path | quote }}
+            - name: KEYSTORE_TYPE
+              value: {{ required "A Rabbit MQ vhost is required" .Values.broker.tls.keystore.type | quote }}
+            - name: KEYSTORE_PASSWORD
+              value: {{ required "A Rabbit MQ vhost is required" .Values.broker.tls.keystore.password | quote }}
+            - name: DB_URL
+              value: {{ required "A Postgres url is required" .Values.db.url | quote }}
+            - name: DB_USERNAME
+              value: {{ required "A Postgres user is required" .Values.db.username | quote }}
+            - name: DB_PASSWORD
+              value: {{ required "A Postgres password is required" .Values.db.password | quote }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: tmp
+          emptyDir: { }
+        - name: tls-certs
+          projected:
+            sources:
+              - secret:
+                  name: {{ required "An secret name is required for this application" .Values.tls.secretName }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
