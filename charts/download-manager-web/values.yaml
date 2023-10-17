@@ -5,10 +5,10 @@
 replicaCount: 1
 
 image:
-  repository: ghcr.io/kkochel/foam-dm
+  repository: ghcr.io/kkochel/foam-dm-web
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.0.2-dm"
+  tag: "0.0.7-web"
 
 imagePullSecrets: []
 nameOverride: ""
