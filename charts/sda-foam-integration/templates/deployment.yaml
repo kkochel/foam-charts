@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sda-foam-integration.fullname" . }}
+  labels:
+    {{- include "sda-foam-integration.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "sda-foam-integration.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "sda-foam-integration.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "sda-foam-integration.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: BROKER_HOST
+              value: {{ required "A Rabbit MQ host is required" .Values.broker.host | quote }}
+            - name: BROKER_PORT
+              value: {{ required "A Rabbit MQ port is required" .Values.broker.port | quote }}
+            - name: BROKER_USERNAME
+              value: {{ required "A Rabbit MQ username is required" .Values.broker.username | quote }}
+            - name: BROKER_PASSWORD
+              value: {{ required "A Rabbit MQ password is required" .Values.broker.password | quote }}
+            - name: BROKER_VHOST
+              value: {{ required "A Rabbit MQ vhost is required" .Values.broker.vhost | quote }}
+            - name: BROKER_SSL
+              value: {{ .Values.broker.tls.enabled | quote }}
+            - name: KEYSTORE_PATH
+              value: {{ .Values.broker.tls.keystore.path | quote }}
+            - name: KEYSTORE_TYPE
+              value: {{ .Values.broker.tls.keystore.type | quote }}
+            - name: KEYSTORE_PASSWORD
+              value: {{ .Values.broker.tls.keystore.password | quote }}
+            - name: DB_URL
+              value: {{ required "A Postgres url is required" .Values.db.url | quote }}
+            - name: DB_USERNAME
+              value: {{ required "A Postgres user is required" .Values.db.username | quote }}
+            - name: DB_PASSWORD
+              value: {{ required "A Postgres password is required" .Values.db.password | quote }}
+            - name: FOAM_ROUTING_KEY
+              value: {{ required "Routing key of target queuee" .Values.app.target_queue_name | quote }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+{{/*          livenessProbe:*/}}
+{{/*            httpGet:*/}}
+{{/*              path: /*/}}
+{{/*              port: http*/}}
+{{/*          readinessProbe:*/}}
+{{/*            httpGet:*/}}
+{{/*              path: /*/}}
+{{/*              port: http*/}}
+          volumeMounts:
+            - name: java-certs
+              mountPath: "/etc/ssl/certs/java"
+            - name: certs
+              mountPath: "/opt/certs"
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: java-certs
+          secret:
+            secretName: {{ required "Name of secret containg Java cacert" .Values.secrets.java | quote }}
+        - name: certs
+          secret:
+            secretName: {{ required "Name of secret containg Java cacert" .Values.secrets.tls | quote }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
