@@ -5,10 +5,10 @@
 replicaCount: 1
 
 image:
-  repository: ghcr.io/kkochel/foam-app
+  repository:  ghcr.io/kkochel/foam-dm-app
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.0.1-app"
+  tag: "0.0.5-app"
 
 imagePullSecrets: [ ]
 nameOverride: ""
@@ -82,22 +82,24 @@ tolerations: [ ]
 affinity: { }
 
 broker:
-  host: ""
-  port: ""
-  username: ""
-  password: ""
-  vhost: ""
+  host: "broker-sda-mq"
+  port: "5671"
+  username: "admin"
+  password: "admin"
+  vhost: "sda"
   tls:
-    enabled: false
+    enabled: true
     keystore:
-      path: ""
+      path: "/keystore/keystore.p12"
       type: "PKCS12"
       password: "changeit"
 
-db:
-  url: ""
-  username: ""
-  password: ""
+secrets:
+  java:
+    cacert: "biobank-ca-cacert"
+    keystore: "foam-keystore"
 
-tls:
-  secretName:
+db:
+  url: "jdbc:postgresql://foam-db-postgresql:5432/foam"
+  username: "biobank"
+  password: "biobank"
