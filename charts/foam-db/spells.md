@@ -1,0 +1,1 @@
+helm install foam-db oci://registry-1.docker.io/bitnamicharts/postgresql --values foam-db/postgres_values.yaml

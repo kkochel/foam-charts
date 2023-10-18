@@ -47,7 +47,7 @@ spec:
             - name: BROKER_SSL
               value: {{ required "Is communnication with broker use TLS" .Values.broker.tls.enabled | quote }}
             - name: KEYSTORE_PATH
-              value: {{ required "The keystore.p12 path is required" .Values.broker.tls.keystore.path | quote | quote }}
+              value: {{ .Values.broker.tls.keystore.path | quote }}
             - name: KEYSTORE_TYPE
               value: {{ required "Type of keystore" .Values.broker.tls.keystore.type | quote }}
             - name: KEYSTORE_PASSWORD
@@ -80,10 +80,10 @@ spec:
       volumes:
         - name: java-cacert
           secret:
-            secretName: {{ required "Name of secret containg Java cacert" .Values.secrets.java.cacert | quote }}
+            secretName: {{ required "Name of secret containg Java cacert" .Values.secrets.java | quote }}
         - name: java-keystore
           secret:
-            secretName: {{ required "Name of secret containg Java cacert" .Values.secrets.java.keystore | quote }}
+            secretName: {{ required "Name of secret containg Java cacert" .Values.secrets.keystore | quote }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

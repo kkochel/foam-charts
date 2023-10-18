@@ -75,6 +75,8 @@ spec:
           volumeMounts:
             - name: java-certs
               mountPath: "/etc/ssl/certs/java"
+            - name: java-keystore
+              mountPath: "/keystore"
             - name: certs
               mountPath: "/opt/certs"
           resources:
@@ -83,6 +85,9 @@ spec:
         - name: java-certs
           secret:
             secretName: {{ required "Name of secret containg Java cacert" .Values.secrets.java | quote }}
+        - name: java-keystore
+          secret:
+            secretName: {{ required "Name of secret containg Java cacert" .Values.secrets.keystore | quote }}
         - name: certs
           secret:
             secretName: {{ required "Name of secret containg Java cacert" .Values.secrets.tls | quote }}
