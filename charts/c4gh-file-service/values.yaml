@@ -1,0 +1,103 @@
+# Default values for c4gh-file-service.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/kkochel/foam-c4gh-fs
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "0.0.1-c4gh-fs"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: "c4gh-file-service"
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+broker:
+  host: "broker-sda-mq"
+  port: "5671"
+  username: "admin"
+  password: "admin"
+  vhost: "sda"
+  tls:
+    enabled: true
+    keystore:
+      path: "/keystore/keystore.p12"
+      type: "PKCS12"
+      password: "changeit"
+
+outbox:
+#  Allowed values: posix
+#  If you want to use nfs please add the appropriate PVC and posix type
+  type: "posix"
+  path: "/"
+  pvClaim: "fega-nfs-outbox-pvc"
+
+archive:
+#  Allowed values: posix, s3
+#  If you want to use nfs please add the appropriate PVC and posix type
+  type: "posix"
+  path: "/"
+  pvClaim: "fega-archive-pvc"
+  s3:
+    endpoint: ""
+    accessKey: ""
+    secretKey: ""
+    bucketName: ""
+
+secrets:
+  java: "biobank-ca-cacert"
+  keystore: "foam-keystore"
+  c4gh: "c4gh"
+
+crypt4gh:
+  private_key_path: "/c4gh/c4gh.sec.pem"
+  private_key_password_path: "/c4gh/passphrase"
