@@ -1,0 +1,93 @@
+# Default values for foam-outbox.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: "ghcr.io/kkochel/sensitive-data-archive"
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "v0.0.90"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext:
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+  allowPrivilegeEscalation: false
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 4444
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+
+broker:
+  host: "broker-sda-mq"
+  port: "5671"
+  username: "admin"
+  password: "admin"
+  vhost: "sda"
+  tls:
+    enabled: true
+    keystore:
+      path: "/keystore/keystore.p12"
+      type: "PKCS12"
+      password: "changeit"
+
+secrets:
+  java: "biobank-ca-cacert"
+  keystore: "foam-keystore"
+  outbox: "inbox-certs"
+
+cega:
+  host: "https://nss.test.ega-archive.org"
+  credential_secret: "sda-sda-svc-inbox"
+
+outbox:
+  #  Allowed values: posix
+  #  If you want to use nfs please add the appropriate PVC and posix type
+  type: "posix"
+  path: "/"
+  pvClaim: "fega-nfs-outbox-pvc"

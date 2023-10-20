@@ -1,0 +1,148 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "foam-outbox.fullname" . }}
+  labels:
+    {{- include "foam-outbox.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "foam-outbox.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "foam-outbox.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "foam-outbox.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: init-java-certs
+          image: neicnordic/openssl-alpine:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              keytool -import \
+                      -trustcacerts \
+                      -file /tls-certs/ca.crt \
+                      -alias legaCA -storetype JKS \
+                      -keystore /tls/cacerts \
+                      -storepass "${KEYSTORE_PASSWORD}" \
+                      -noprompt &&
+              keytool -import \
+                      -trustcacerts \
+                      -file /tls-certs/egaArchive.pem \
+                      -alias ega-archive.org -storetype JKS \
+                      -keystore /tls/cacerts \
+                      -storepass "${KEYSTORE_PASSWORD}" \
+                      -noprompt &&
+              openssl pkcs12 -export \
+                             -out /tls/keystore.p12 \
+                             -inkey /tls-certs/tls.key \
+                             -in /tls-certs/tls.crt \
+                             -passout pass:"${KEYSTORE_PASSWORD}"
+          securityContext:
+            allowPrivilegeEscalation: false
+          env:
+            - name: KEYSTORE_PASSWORD
+              value: {{ required "Keystore password is required" .Values.broker.tls.keystore.password | quote }}
+          volumeMounts:
+            - name: tls-certs
+              mountPath: /tls-certs
+            - name: tmp
+              mountPath: /tls
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}-sftp-inbox"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["java", "-jar", "inbox-0.0.3-SNAPSHOT.jar"]
+          ports:
+            - name: outbox
+              containerPort: 4444
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - netstat -an | grep -q ':4444 '
+            initialDelaySeconds: 120
+            periodSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - netstat -an | grep -q ':4444 '
+            initialDelaySeconds: 30
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+            - name: BROKER_HOST
+              value: {{ required "A valid MQ host is required" .Values.broker.host | quote }}
+            - name: BROKER_PASSWORD
+              value: {{ required "A valid MQ host is required" .Values.broker.password | quote }}
+            - name: BROKER_PORT
+              value: {{ .Values.broker.port | quote }}
+            - name: BROKER_ROUTINGKEY
+              value: "outbox_events"
+            - name: BROKER_USERNAME
+              value: {{ .Values.broker.username | quote }}
+            - name: BROKER_VHOST
+              value: {{ .Values.broker.vhost | quote }}
+            - name: KEYSTORE_PATH
+              value: {{ .Values.broker.tls.keystore.path | quote }}
+            - name: KEYSTORE_TYPE
+              value: {{ required "Type of keystore" .Values.broker.tls.keystore.type | quote }}
+            - name: KEYSTORE_PASSWORD
+              value: {{ required "Password to keystore" .Values.broker.tls.keystore.password | quote }}
+            - name: CEGA_ENDPOINT
+              value: {{ printf "%s%s" (.Values.cega.host) "/username/%s" | quote }}
+            - name: CEGA_ENDPOINT_CREDS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.cega.credential_secret }}
+                  key: cegaCredentials
+          volumeMounts:
+            - name: outbox
+              mountPath: "/ega/inbox"
+            - name: tmp
+              mountPath: "/etc/ssl/certs/java"
+            - name: tmp
+              mountPath: /tmp/
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: outbox
+          persistentVolumeClaim:
+            claimName: {{ .Values.outbox.pvClaim }}
+        - name: tls-certs
+          projected:
+            sources:
+              - secret:
+                  name: {{ required "Name of secret containing certificates" .Values.secrets.outbox }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

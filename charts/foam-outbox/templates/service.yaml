@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "foam-outbox.fullname" . }}
+  labels:
+    {{- include "foam-outbox.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: outbox
+      protocol: TCP
+      name: outbox
+  selector:
+    {{- include "foam-outbox.selectorLabels" . | nindent 4 }}
