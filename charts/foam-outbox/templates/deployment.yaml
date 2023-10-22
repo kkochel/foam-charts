@@ -109,6 +109,8 @@ spec:
               value: {{ required "Type of keystore" .Values.broker.tls.keystore.type | quote }}
             - name: KEYSTORE_PASSWORD
               value: {{ required "Password to keystore" .Values.broker.tls.keystore.password | quote }}
+            - name: INBOX_PORT
+              value: {{ .Values.service.port | quote }}
             - name: CEGA_ENDPOINT
               value: {{ printf "%s%s" (.Values.cega.host) "/username/%s" | quote }}
             - name: CEGA_ENDPOINT_CREDS

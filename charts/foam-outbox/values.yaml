@@ -29,10 +29,10 @@ podSecurityContext: {}
   # fsGroup: 2000
 
 securityContext:
-  runAsUser: 65534
-  runAsGroup: 65534
-  fsGroup: 65534
-  allowPrivilegeEscalation: false
+#  runAsUser: 65534
+#  runAsGroup: 65534
+#  fsGroup: 65534
+#  allowPrivilegeEscalation: false
   # capabilities:
   #   drop:
   #   - ALL
@@ -72,7 +72,7 @@ broker:
   tls:
     enabled: true
     keystore:
-      path: "/keystore/keystore.p12"
+      path: "/etc/ssl/certs/java/keystore.p12"
       type: "PKCS12"
       password: "changeit"
 
