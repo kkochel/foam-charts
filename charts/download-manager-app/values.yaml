@@ -8,7 +8,7 @@ image:
   repository:  ghcr.io/kkochel/foam-dm-app
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.0.5-app"
+  tag: "0.0.7-app"
 
 imagePullSecrets: [ ]
 nameOverride: ""
@@ -38,7 +38,7 @@ securityContext: { }
 
 service:
   type: ClusterIP
-  port: 8080
+  port: 80
 
 resources: { }
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -86,3 +86,5 @@ db:
   url: "jdbc:postgresql://foam-db-postgresql:5432/foam"
   username: "biobank"
   password: "biobank"
+
+allowed_origins: "web.example.com

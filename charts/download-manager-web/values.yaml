@@ -8,11 +8,11 @@ image:
   repository: ghcr.io/kkochel/foam-dm-web
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.0.7-web"
+  tag: "0.0.11-web"
 
 imagePullSecrets: []
 nameOverride: ""
-fullnameOverride: ""
+fullnameOverride: "foam-dm-web"
 
 serviceAccount:
   # Specifies whether a service account should be created

@@ -55,11 +55,11 @@ spec:
             - name: C4GH_PRIVATE_KEY
               value: {{ required "Password to keystore" .Values.crypt4gh.private_key_path | quote }}
             - name: C4GH_PRIVATE_KEY_PASSWORD
-              value: {{ required "Password to keystore" .Values.crypt4gh.private_key_password_path | quote }}
+              value: {{ required "Password to keystore" .Values.crypt4gh.private_key_password | quote }}
             - name: OUTBOX_TYPE
               value: {{ required "Type of outbox" .Values.outbox.type | quote }}
             - name: OUTBOX_PATH
-              value: {{ required "Outbox path" .Values.outbox.type | quote }}
+              value: {{ required "Outbox path" .Values.outbox.path | quote }}
             - name: ARCHIVE_TYPE
               value: {{ required "Type of archive" .Values.archive.type | quote }}
             - name: ARCHIVE_PATH
@@ -96,13 +96,11 @@ spec:
               name: "/c4gh"
           {{- if eq "posix" .Values.archive.type }}
             - name: archive
-              persistentVolumeClaim:
-                claimName: {{ .Values.archive.pvClaim }}
+              mountPath: {{ .Values.archive.path }}
           {{- end}}
           {{- if eq "posix" .Values.outbox.type }}
             - name: outbox
-              persistentVolumeClaim:
-                claimName: {{ .Values.outbox.pvClaim }}
+              mountPath: {{ .Values.outbox.path }}
           {{- end}}
           {{/*end volumeMounts*/}}
       {{/*volumes*/}}

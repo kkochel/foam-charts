@@ -58,6 +58,8 @@ spec:
               value: {{ required "A Postgres user is required" .Values.db.username | quote }}
             - name: DB_PASSWORD
               value: {{ required "A Postgres password is required" .Values.db.password | quote }}
+            - name: ALLOWED_ORIGINS
+              value: {{ required "Allowed origins for CORS" .Values.allowed_origins | quote }}
           ports:
             - name: http
               containerPort: 8080

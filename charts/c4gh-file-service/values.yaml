@@ -6,9 +6,9 @@ replicaCount: 1
 
 image:
   repository: ghcr.io/kkochel/foam-c4gh-fs
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.0.1-c4gh-fs"
+  tag: "0.0.5-c4gh-fs"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -78,14 +78,14 @@ outbox:
 #  Allowed values: posix
 #  If you want to use nfs please add the appropriate PVC and posix type
   type: "posix"
-  path: "/"
+  path: "/outbox"
   pvClaim: "fega-nfs-outbox-pvc"
 
 archive:
 #  Allowed values: posix, s3
 #  If you want to use nfs please add the appropriate PVC and posix type
   type: "posix"
-  path: "/"
+  path: "/archive"
   pvClaim: "fega-archive-pvc"
   s3:
     endpoint: ""
@@ -100,4 +100,4 @@ secrets:
 
 crypt4gh:
   private_key_path: "/c4gh/c4gh.sec.pem"
-  private_key_password_path: "/c4gh/passphrase"
+  private_key_password: "/uxPFPxI4Oe4H5qJ1UO7kMCkvKgNHEzrX"
