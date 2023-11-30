@@ -85,13 +85,13 @@ archive:
 #  Allowed values: posix, s3
 #  If you want to use nfs please add the appropriate PVC and posix type
   type: "posix"
+  # Path value or s3 bucket name
   path: "/archive"
   pvClaim: "fega-archive-pvc"
   s3:
-    endpoint: ""
+    endpoint: "http://ip-with-port"
     accessKey: ""
     secretKey: ""
-    bucketName: ""
 
 secrets:
   java: "biobank-ca-cacert"
