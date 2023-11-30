@@ -33,6 +33,11 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: BACKEND_SERVICE_NAME
+              value: {{ required "Name of kubernetes backend service" .Values.nginx.backendServiceName | quote }}
+            - name: DOMAIN
+              value: {{ required "Domain name" .Values.nginx.domainName | quote }}
           ports:
             - name: http
               containerPort: 80

@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/kkochel/foam-integration
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.0.2-int"
+  tag: "0.0.3-int"
 
 imagePullSecrets: []
 nameOverride: ""

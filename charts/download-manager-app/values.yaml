@@ -8,7 +8,7 @@ image:
   repository:  ghcr.io/kkochel/foam-dm-app
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.0.7-app"
+  tag: "0.0.13-app"
 
 imagePullSecrets: [ ]
 nameOverride: ""
@@ -87,4 +87,5 @@ db:
   username: "biobank"
   password: "biobank"
 
-allowed_origins: "web.example.com
+allowed_origins: "www.test-fega.uni.lodz.pl"
+jwt_secret_key: "change me !"

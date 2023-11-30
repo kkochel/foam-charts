@@ -5,10 +5,10 @@
 replicaCount: 1
 
 image:
-  repository: "ghcr.io/kkochel/sensitive-data-archive"
+  repository: "ghcr.io/kkochel/foam-outbox"
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v0.0.90"
+  tag: "0.0.5-outbox"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -72,14 +72,14 @@ broker:
   tls:
     enabled: true
     keystore:
-      path: "/etc/ssl/certs/java/keystore.p12"
+      path: "/keystore/keystore.p12"
       type: "PKCS12"
       password: "changeit"
 
 secrets:
   java: "biobank-ca-cacert"
   keystore: "foam-keystore"
-  outbox: "inbox-certs"
+  tls: "foam-certs"
 
 cega:
   host: "https://nss.test.ega-archive.org"
@@ -90,4 +90,4 @@ outbox:
   #  If you want to use nfs please add the appropriate PVC and posix type
   type: "posix"
   path: "/"
-  pvClaim: "fega-nfs-outbox-pvc"
+  pvClaim: "outbox-pvc"

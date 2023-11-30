@@ -92,8 +92,8 @@ spec:
               mountPath: "/etc/ssl/certs/java"
             - name: java-keystore
               mountPath: "/keystore"
-            - mountPath: c4gh
-              name: "/c4gh"
+            - name: c4gh
+              mountPath: "/c4gh"
           {{- if eq "posix" .Values.archive.type }}
             - name: archive
               mountPath: {{ .Values.archive.path }}

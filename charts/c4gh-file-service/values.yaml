@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/kkochel/foam-c4gh-fs
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.0.5-c4gh-fs"
+  tag: "0.0.12-c4gh-fs"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -79,7 +79,7 @@ outbox:
 #  If you want to use nfs please add the appropriate PVC and posix type
   type: "posix"
   path: "/outbox"
-  pvClaim: "fega-nfs-outbox-pvc"
+  pvClaim: "outbox-pvc"
 
 archive:
 #  Allowed values: posix, s3

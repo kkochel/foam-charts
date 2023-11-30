@@ -60,6 +60,8 @@ spec:
               value: {{ required "A Postgres password is required" .Values.db.password | quote }}
             - name: ALLOWED_ORIGINS
               value: {{ required "Allowed origins for CORS" .Values.allowed_origins | quote }}
+            - name: JWT_SECRET_KEY
+              value: {{ required "JWT secret key" .Values.jwt_secret_key | quote }}
           ports:
             - name: http
               containerPort: 8080
